@@ -1,32 +1,26 @@
 # Conformalized-GNN-with-Conditional-Guarantees
 For the base(uncalibrated) GNN model, consider 'GAT', 'GCN', 'GraphSAGE', 'SGC'.
 
-Let $G=(\mathcal{V}, \mathcal{E})$ be a graph, where $\mathcal{V}$ and $\mathcal{E}$ are the set of nodes of the graph and the corresponding set of edges. The data-structured dataset $(\textbf{X}, \mathcal{Y}) = \{(X_i, Y_i)\}_{i=1}^n$ contains feature vectors $\textbf{X}_v\in\mathbb{R}^d$ associated to each node $v\in \mathcal{V}$, and $Y_v\in\mathcal{Y}$ is the label of node $v$. Each $(X_i, Y_i)$ is assumed to be drawn i.i.d from the distribution $P$. We empirically apply our frame to two kinds of tasks, node classification and node regression. The data type of $\mathcal{Y}$ is slightly difference. $\mathcal{Y}$ is a discrete set in classification tasks, while $Y_v$ represents for continous real value in $\mathbb{R}$ for regression tasks. We currently only consider the transductive setting where each node learns the representation by utilizing all the neighborhood information. In the last section we will discuss the possible ways for the inductive setting.
+Let $G=(\mathcal{V}, \mathcal{E})$ be a graph, where $\mathcal{V}$ and $\mathcal{E}$ are the set of nodes of the graph and the corresponding set of edges. The data-structured dataset $(\textbf{X}, \mathcal{Y}) = \{(X_i, Y_i)\}_{i=1}^n$ contains feature vectors $\textbf{X}_v\in\mathbb{R}^d$ associated to each node $v\in \mathcal{V}$, and $Y_v\in\mathcal{Y}$ is the label of node $v$. Each $(X_i, Y_i)$ is assumed to be drawn i.i.d from the distribution $P$. We empirically apply our frame to two kinds of tasks, node classification and node regression. We currently only consider the transductive setting where each node learns the representation by utilizing all the neighborhood information. In the last section we will discuss the possible ways for the inductive setting.
 
-The obtained prediction sets are expected to meet two competing goals: \textit{(1) \textbf{distribution-free}: does not rely on specific assumptions about the probability distribution or structure of the data, (2) be valid in finite samples, (3) \textbf{conditional coverage: } satisfy} $\mathbb{P}(Y_{n+1}\in \hat{C}(X_{n+1})|X_{n+1}=x)=1-a$. 
+The obtained prediction sets are expected to meet 3 competing goals: (1) distribution-free: does not rely on specific assumptions about the probability distribution or structure of the data, (2) be valid in finite samples, (3) conditional coverage: satisfy $\mathbb{P}(Y_{n+1}\in \hat{C}(X_{n+1})|X_{n+1}=x)=1-a$. 
+
+It has been demonstrated that it is impossible to satisfy these conditions simultaneously (Vovk, 2012; Barber et al., 2020). A widely adopted approach that comes close to achieving this is conformal prediction, while it only gives marginal coverage rather than conditional ones $\mathbb{P}(Y_{n+1}\in \hat{C}(X_{n+1}))=1-a$.
+
+**Proposition 1**
+P(Y_{n+1} ∈ Ĉ(X_{n+1}) | X_{n+1} = x) = 1 - α, for all x  
+⟺  
+E[f(X_{n+1})(1{Y_{n+1} ∈ Ĉ(X_{n+1})} - (1 - α))] = 0, for all measurable f.
+
+*Proof*
+
+P(Y_{n+1} ∈ Ĉ(X_{n+1}) | X_{n+1} = x) = 1 - α  
+⟺ E[1{Y_{n+1} ∈ Ĉ(X_{n+1})} | X_{n+1} = x] = 1 - α  
+⟺ E[f(X_{n+1}) ⋅ E[1{Y_{n+1} ∈ Ĉ(X_{n+1})} | X_{n+1} = x]] = E[f(X_{n+1}) ⋅ (1 - α)]  
+⟺ E[f(X_{n+1}) ⋅ (1{Y_{n+1} ∈ Ĉ(X_{n+1})} - (1 - α))] = 0
 
 
-Previous work has demonstrated that it is impossible to satisfy these conditions simultaneously (Vovk, 2012; Barber et al., 2020). A widely adopted approach that comes close to achieving this is conformal prediction, while it only gives marginal coverage rather than conditional ones $\mathbb{P}(Y_{n+1}\in \hat{C}(X_{n+1}))=1-a$.
-
-
-\textbf{Propostion 1} \[
-\mathbb{P}(Y_{n+1} \in \hat{C}(X_{n+1}) \mid X_{n+1} = x) = 1 - \alpha, \quad \text{for all } x
-\]
-\[
-\iff
-\]
-\[
-\mathbb{E}[f(X_{n+1})(1\{Y_{n+1} \in \hat{C}(X_{n+1})\}) - (1 - \alpha)] = 0, \quad \text{for all measurable } f.
-\]
-\textit{Proof}
-\begin{align*}
-    &\mathbb{P}(Y_{n+1} \in \hat{C}(X_{n+1}) \mid X_{n+1} = x) = 1 - \alpha \\
-    \iff &\mathbb{E}[\mathbf{1}\{Y_{n+1} \in \hat{C}(X_{n+1})\} \mid X_{n+1} = x] = 1 - \alpha \\
-    \iff &\mathbb{E}\left[f(X_{n+1}) \cdot \mathbb{E}\left[1\{Y_{n+1} \in \hat{C}(X_{n+1})\} \mid X_{n+1} = x\right]\right] = \mathbb{E}\left[f(X_{n+1}) \cdot (1 - \alpha)\right]\\
-    \iff & \mathbb{E}\left[f(X_{n+1}) \cdot (1\{Y_{n+1} \in \hat{C}(X_{n+1})\} - (1 - \alpha))\right] = 0
-\end{align*}
-
-To make it achievable, we can relax the requirement by only ensuring coverage over "a selected class of functions \( \mathcal{F} \)" rather than over "all measurable \( f \)." 
+To make it achievable, we can relax the requirement by only ensuring coverage over "a selected class of functions F" rather than over "all measurable f." 
 
 Consider the relaxed coverage objective, this subset could potentially be infinite, but it is less complex than the set of all measurable functions. For example, if \( \mathcal{F} \) is \( \{x \mapsto 1\} \), this yields \textbf{marginal coverage}—i.e., on average across all inputs, the coverage requirement is met. If we choose more complex classes \( \mathcal{F} \), the resulting coverage can bridge the gap between marginal coverage (broad, average-level coverage) and full conditional coverage (coverage for every possible value of \( X \)).
 
@@ -83,7 +77,7 @@ where T is the tempurature of softmax, and $\hat{y}_k$ are logits, which are raw
 
 In the proof of proposition 1, the last step is obtained by the law of iterated expectations that relax conditional expectations to unconditional expectations. Utilizing the same law, the objective (1) can be reversely modified to a conditional probability of $Y$, \[\mathbb{P}(Y_{n+1} \in \hat{C}(X_{n+1})|Y_{n+1} =y) =1-\alpha \tag{2}\]
 
-
+```bibtex
 @article{huang2023conformalized_gnn,
   title={Uncertainty quantification over graph with conformalized graph neural networks},
   author={Huang, Kexin and Jin, Ying and Candes, Emmanuel and Leskovec, Jure},
