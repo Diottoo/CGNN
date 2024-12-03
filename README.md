@@ -84,3 +84,9 @@ where T is the tempurature of softmax, and $\hat{y}_k$ are logits, which are raw
 In the proof of proposition 1, the last step is obtained by the law of iterated expectations that relax conditional expectations to unconditional expectations. Utilizing the same law, the objective (1) can be reversely modified to a conditional probability of $Y$, \[\mathbb{P}(Y_{n+1} \in \hat{C}(X_{n+1})|Y_{n+1} =y) =1-\alpha \tag{2}\]
 
 
+@article{huang2023conformalized_gnn,
+  title={Uncertainty quantification over graph with conformalized graph neural networks},
+  author={Huang, Kexin and Jin, Ying and Candes, Emmanuel and Leskovec, Jure},
+  journal={NeurIPS},
+  year={2023}
+}
